@@ -1,5 +1,5 @@
 [package]
-name = "point"
+name = "point-index"
 version = "0.1.0"
 edition = "2021"
 description = "A simple point library for indexing into 2D arrays"
