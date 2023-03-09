@@ -1,19 +1,23 @@
-//! a point library for working with 2d arrays or vectors
-//! it has all the cardinal direction for point addiction as well as scalar multiplication.
+//! a point library for working with 2d arrays or vectors.
+//!
+//! it has all the cardinal direction for point addition as well as scalar multiplication.
+//! # Examples
 //! here are a couple of examples of array accessing
 //! ```
 //! use point_index::*;
 //! let mut vec = vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8]];
 //! let mut point1 = Point { x: 1, y: 1 };
 //! assert_eq!(vec[point1], 4);
+//! // Up is the same as Point {x: 0, y: -1}
 //! let point2 = point1 + UP;
 //! assert_eq!(vec[point2], 1);
+//! // Down is the same as Point {x: 0, y: 1}
 //! let point3 = point2 + DOWN * 2;
 //! assert_eq!(vec[point3], 7);
+//! // Up left is the same as Point {x: -1, y: -1}
 //! let point4 = point1 + UP_LEFT;
 //! assert_eq!(vec[point4], 0)
 //! ```
-//!
 //! here is a sample of examples of array mutation
 //! ```
 //! use point_index::*;
@@ -122,6 +126,8 @@ impl <A, const SIZE_OUTER: usize, const SIZE_INNER: usize> IndexMut<Point> for [
 }
 
 
+/// This trait is used to get a value from a 2d array. If the operation fails, either because the
+/// point is out of bounds or because the conversion from isize to usize fails, None is returned.
 pub trait Get{
     type Output;
     fn get_option(&self, point: Point) -> Option<&Self::Output>;
@@ -161,6 +167,9 @@ impl<A, const SIZE_INNER: usize, const SIZE_OUTER: usize> Get for [[A; SIZE_INNE
 }
 
 
+/// This trait is used to set a value in a 2d array if it succeeds then the item that was at that
+/// index is returned. If the operation fails, either because the point is out of bounds or because
+/// the conversion from isize to usize fails, None is returned.
 pub trait Set{
     type Output;
     fn set(&mut self, point: Point, value: Self::Output) -> Option<Self::Output>;
