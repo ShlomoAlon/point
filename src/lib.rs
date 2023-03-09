@@ -1,3 +1,4 @@
+
 use std::mem;
 use std::ops::{Add, Index, IndexMut, Mul, Sub};
 pub const UP: Point = Point { x: 0, y: -1 };
