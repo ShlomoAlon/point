@@ -41,8 +41,10 @@
 //!
 //! )
 //! ```
+//! quick warning, this library relies on const generics for arrays.
 use std::mem;
 use std::ops::{Add, Index, IndexMut, Mul, Sub};
+
 pub const UP: Point = Point { x: 0, y: -1 };
 pub const DOWN: Point = Point { x: 0, y: 1 };
 pub const LEFT: Point = Point { x: -1, y: 0 };
@@ -60,7 +62,15 @@ pub struct Point {
 }
 
 impl Point {
-    fn new(x: isize, y: isize) -> Point {
+    /// creates a new point from two usizes, if you want to create a point from two isize,
+    /// use Point{x: x, y: y}
+    /// or Point::new_isize(x, y)
+    pub fn new(x: usize, y: usize) -> Point {
+        Point {x: x as isize, y: y as isize}
+    }
+    /// creates a new point from two isize, if you want to create a point from two usize,
+    /// use Point::new(x, y)
+    pub fn new_isize(x: isize, y: isize) -> Point {
         Point {x, y}
     }
 }
@@ -69,7 +79,10 @@ impl Add for Point {
     type Output = Point;
 
     fn add(self, other: Point) -> Point {
-        Point::new(self.x + other.x, self.y + other.y)
+        Point{
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
     }
 }
 
@@ -77,7 +90,7 @@ impl Sub for Point {
     type Output = Point;
 
     fn sub(self, other: Point) -> Point {
-        Point::new(self.x - other.x, self.y - other.y)
+        Point::new_isize(self.x - other.x, self.y - other.y)
     }
 }
 
@@ -85,7 +98,7 @@ impl Mul<isize> for Point {
     type Output = Point;
 
     fn mul(self, other: isize) -> Point {
-        Point::new(self.x * other, self.y * other)
+        Point::new_isize(self.x * other, self.y * other)
     }
 }
 
@@ -197,9 +210,29 @@ impl<A, const SIZE_INNER: usize, const SIZE_OUTER: usize> Set for [[A; SIZE_INNE
     }
 }
 
+/// turns a 2d vec into a flat iterator that returns the point and the value at that point
+/// it goes from left to right, top to bottom
+/// eventually I will find a way to implement this as a trait without using box to get a decend speed up
+/// and better notation
+pub fn enumerate_iter_vec<'a, A: 'a>(vec: Vec<Vec<A>>) -> Box<dyn Iterator<Item=(Point,A)> + 'a>{
+    Box::new(vec.into_iter().enumerate().flat_map(|(y, row)| {
+        row.into_iter().enumerate().map(move |(x, item)| {
+            (Point::new(x, y), item)
+        })
+    }))
+}
 
-
-
+/// turns a 2d array into a flat iterator that returns the point and the value at that point
+/// it goes from left to right, top to bottom
+/// eventually I will find a way to implement this as a trait without using box to get a decend speed up
+/// and better notation
+pub fn enumerate_iter_arr<'a, A: 'a, const INNER: usize, const OUTER: usize>(arr: [[A; INNER]; OUTER]) -> Box<dyn Iterator<Item=(Point,A)> + 'a>{
+    Box::new(arr.into_iter().enumerate().flat_map(|(y, row)| {
+        row.into_iter().enumerate().map(move |(x, item)| {
+            (Point::new(x, y), item)
+        })
+    }))
+}
 
 #[cfg(test)]
 mod tests {
@@ -244,5 +277,11 @@ mod tests {
         let v = [[1, 1, 1, 2]; 3];
         let point = Point::new(1, 1) + RIGHT * 2;
         assert_eq!(v[point], 2);
+    }
+    #[test]
+    fn large_array() {
+        let v = [[0; 500]; 1000];
+        let point = Point::new(1, 1) + RIGHT * 2;
+        assert_eq!(v[point], 0);
     }
 }
